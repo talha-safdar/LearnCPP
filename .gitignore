@@ -62,3 +62,4 @@ src/output
 src/main.dSYM
 .DS_Store
 main
+src/main

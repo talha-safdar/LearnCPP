@@ -1,147 +1,186 @@
 #include <iostream>
 
+// TOPIC 5 — Header / Source Structure
+
+/*
+    Header (.h / .hpp)
+    Contains declarations:
+    class definitions
+    function declarations
+    struct definitions
+    enums
+    constants
+    templates
+    
+    Source (.cpp)
+    Contains implementations:
+    function bodies
+    method bodies
+    logic
+*/
+
+int main()
+{
+    // Unique Pointer (C++14+ required for make_unique)
+    std::unique_ptr<int> u_ptr = std::make_unique<int>(42);
+    std::cout << "Unique value: " << *u_ptr << "\n";
+    
+    // Shared Pointer
+    std::shared_ptr<int> s_ptr_a = std::make_shared<int>(99);
+    
+    // Copy/Share the pointer
+    std::shared_ptr<int> s_ptr_b = s_ptr_a;
+    
+    std::cout << "Shared value: " << *s_ptr_b << "\n";
+    std::cout << "Ref count: " << s_ptr_a.use_count() << "\n";
+    return 0;
+}
+
+
+
+
 // ###
 // TOPIC 4 - Smart Pointers 
 // Modern C++ Memory Safety
 
-/*
-    - raw points use "new" and "delete" (unsafe)
-    - smart pointers prevent all bad lucks.
+// /*
+//     - raw points use "new" and "delete" (unsafe)
+//     - smart pointers prevent all bad lucks.
     
-    std::unique_ptr (only one owner)
-    ↪ object destroyed when owner goes out of scope { ... }
-    - destructor is automatic don't need "delete"
-    - you cannot copy it as it passes ownership hence becomes null (e.g. auto p2 = std::move(p1); // p1 becomes null)
-    e.g. std::unique_ptr<Player> p = std::make_unique<Player>(100);
+//     std::unique_ptr (only one owner)
+//     ↪ object destroyed when owner goes out of scope { ... }
+//     - destructor is automatic don't need "delete"
+//     - you cannot copy it as it passes ownership hence becomes null (e.g. auto p2 = std::move(p1); // p1 becomes null)
+//     e.g. std::unique_ptr<Player> p = std::make_unique<Player>(100);
     
-    std::shared_ptr (multiple owners)
-    ↪ object detroyed when last referes goes away
-    - multiple smart pointers share the same object
-    - destructors runs when "all" owners of the same object die
-    e.g. std::shared_ptr<Player> p1 = std::make_shared<Player>(100);
-         std::shared_ptr<Player> p2 = p1; // both own it
+//     std::shared_ptr (multiple owners)
+//     ↪ object detroyed when last referes goes away
+//     - multiple smart pointers share the same object
+//     - destructors runs when "all" owners of the same object die
+//     e.g. std::shared_ptr<Player> p1 = std::make_shared<Player>(100);
+//          std::shared_ptr<Player> p2 = p1; // both own it
     
-    std::weak_ptr (non-owning reference)
-    A → B
-    B → A
-    They will never reach zero references, which means:
-    -  destructors never run
-    - memory is leaked
-    - application keeps growing in RAM
-    Player → Weapon (shared_ptr)
-    Weapon → Player (weak_ptr)
-    Player OWNS the Weapon
-    Weapon just REFERS to Player but DOES NOT keep Player alive
-    does NOT keep the object alive
-    it only observes an object owned by shared_ptr
-    when the object dies, weak_ptr automatically becomes “expired”
-    it does NOT hold a valid address anymore
-    to use a weak pointer:
-    auto sp = weak.lock(); // auto means var in C#
-    if (sp) {
-        // object still alive
-    }
+//     std::weak_ptr (non-owning reference)
+//     A → B
+//     B → A
+//     They will never reach zero references, which means:
+//     -  destructors never run
+//     - memory is leaked
+//     - application keeps growing in RAM
+//     Player → Weapon (shared_ptr)
+//     Weapon → Player (weak_ptr)
+//     Player OWNS the Weapon
+//     Weapon just REFERS to Player but DOES NOT keep Player alive
+//     does NOT keep the object alive
+//     it only observes an object owned by shared_ptr
+//     when the object dies, weak_ptr automatically becomes “expired”
+//     it does NOT hold a valid address anymore
+//     to use a weak pointer:
+//     auto sp = weak.lock(); // auto means var in C#
+//     if (sp) {
+//         // object still alive
+//     }
     
-    CODE EXAMPLE:
-    #include <iostream>
-    #include <memory>
+//     CODE EXAMPLE:
+//     #include <iostream>
+//     #include <memory>
 
-    class Player {
-    public:
-        Player()  { std::cout << "Player created\n"; }
-        ~Player() { std::cout << "Player destroyed\n"; }
-    };
+//     class Player {
+//     public:
+//         Player()  { std::cout << "Player created\n"; }
+//         ~Player() { std::cout << "Player destroyed\n"; }
+//     };
 
-    int main() {
-        // 1) UNIQUE_PTR → owns Player exclusively
-        std::unique_ptr<Player> up = std::make_unique<Player>();
+//     int main() {
+//         // 1) UNIQUE_PTR → owns Player exclusively
+//         std::unique_ptr<Player> up = std::make_unique<Player>();
 
-        // 2) SHARED_PTR → shared ownership
-        std::shared_ptr<Player> sp1 = std::make_shared<Player>();
-        std::shared_ptr<Player> sp2 = sp1; // both share
+//         // 2) SHARED_PTR → shared ownership
+//         std::shared_ptr<Player> sp1 = std::make_shared<Player>();
+//         std::shared_ptr<Player> sp2 = sp1; // both share
 
-        std::cout << "Shared count: " << sp1.use_count() << "\n"; // prints 2
+//         std::cout << "Shared count: " << sp1.use_count() << "\n"; // prints 2
 
-        // 3) WEAK_PTR → does NOT own the object
-        std::weak_ptr<Player> wp = sp1; // refers to same Player, but does NOT keep alive
+//         // 3) WEAK_PTR → does NOT own the object
+//         std::weak_ptr<Player> wp = sp1; // refers to same Player, but does NOT keep alive
 
-        // Check if weak_ptr sees object alive
-        if (auto locked = wp.lock()) {
-            std::cout << "Weak_ptr sees player alive\n";
-        }
+//         // Check if weak_ptr sees object alive
+//         if (auto locked = wp.lock()) {
+//             std::cout << "Weak_ptr sees player alive\n";
+//         }
 
-        // Destroy both shared_ptr owners
-        sp1.reset();
-        sp2.reset();  // Player destroyed here (use_count hits 0)
+//         // Destroy both shared_ptr owners
+//         sp1.reset();
+//         sp2.reset();  // Player destroyed here (use_count hits 0)
 
-        // Now weak_ptr is expired
-        if (wp.expired()) {
-            std::cout << "Weak_ptr: object expired\n";
-        }
+//         // Now weak_ptr is expired
+//         if (wp.expired()) {
+//             std::cout << "Weak_ptr: object expired\n";
+//         }
 
-        // unique_ptr goes out of scope automatically here → destroyed
+//         // unique_ptr goes out of scope automatically here → destroyed
 
-        return 0;
-    }
-*/
+//         return 0;
+//     }
+// */
 
-class Player
-{
-public:
+// class Player
+// {
+// public:
 
-    int health;
-    Player(int h) : health(h)
-    {
-        std::cout << "construted player" << std::endl;
-    }
-    ~Player()
-    {
-        std::cout << "Destructed player" << std::endl;
-    }
-};
+//     int health;
+//     Player(int h) : health(h)
+//     {
+//         std::cout << "construted player" << std::endl;
+//     }
+//     ~Player()
+//     {
+//         std::cout << "Destructed player" << std::endl;
+//     }
+// };
 
-int main()
-{
-    // unique pointer
-    std::unique_ptr<Player> up = std::make_unique<Player>(100);
-    std::cout << "start unique pointer: " << up->health << std::endl;
-    up->health = 80;
-    std::cout << "change unique pointer: " << up->health << std::endl;
+// int main()
+// {
+//     // unique pointer
+//     std::unique_ptr<Player> up = std::make_unique<Player>(100);
+//     std::cout << "start unique pointer: " << up->health << std::endl;
+//     up->health = 80;
+//     std::cout << "change unique pointer: " << up->health << std::endl;
     
-    // shared pointer 
-    std::shared_ptr<Player> sp1 = std::make_shared<Player>(100);
-    std::cout << "start sp1 count: " << sp1.use_count() << std::endl;
-    auto sp2 = sp1;
+//     // shared pointer 
+//     std::shared_ptr<Player> sp1 = std::make_shared<Player>(100);
+//     std::cout << "start sp1 count: " << sp1.use_count() << std::endl;
+//     auto sp2 = sp1;
         
-    // weak pointer
-    std::weak_ptr<Player> wp = sp1; // refer to sp1 without owning it
-    if (wp.expired() == false)
-    {
-        std::cout << "weak pointer referring" << std::endl;
-    }
-    else 
-    {
-        std::cout << "weak pointer not referring" << std::endl;
-    }
+//     // weak pointer
+//     std::weak_ptr<Player> wp = sp1; // refer to sp1 without owning it
+//     if (wp.expired() == false)
+//     {
+//         std::cout << "weak pointer referring" << std::endl;
+//     }
+//     else 
+//     {
+//         std::cout << "weak pointer not referring" << std::endl;
+//     }
 
-    std::cout << "start sp1 count: " << sp1.use_count() << std::endl;
-    sp1.reset(); // kill the owner sp1
+//     std::cout << "start sp1 count: " << sp1.use_count() << std::endl;
+//     sp1.reset(); // kill the owner sp1
     
-    std::cout << "update sp2 count: " << sp2.use_count() << std::endl;
-    sp2.reset(); // kill the owner sp2
+//     std::cout << "update sp2 count: " << sp2.use_count() << std::endl;
+//     sp2.reset(); // kill the owner sp2
     
-    // weak point dies when the object dies not the pointer, so if all owners then
-    // it gets expired in this case after sp2 is reset()
-    if (wp.expired() == false)
-    {
-        std::cout << "weak pointer referring" << std::endl;
-    }
-    else 
-    {
-        std::cout << "weak pointer not referring" << std::endl;
-    }
-    return 0;
-}
+//     // weak point dies when the object dies not the pointer, so if all owners then
+//     // it gets expired in this case after sp2 is reset()
+//     if (wp.expired() == false)
+//     {
+//         std::cout << "weak pointer referring" << std::endl;
+//     }
+//     else 
+//     {
+//         std::cout << "weak pointer not referring" << std::endl;
+//     }
+//     return 0;
+// }
 
 
 
