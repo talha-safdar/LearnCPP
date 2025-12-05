@@ -61,3 +61,4 @@ build/
 src/output
 src/main.dSYM
 .DS_Store
+main

@@ -1,55 +1,207 @@
 #include <iostream>
 
-// TOPIC 3 - Object lifetime and RAII
-// RAII = Resource Acquisition Is Initialization (object lifetime cruciality)
+// ###
+// TOPIC 4 - Smart Pointers 
+// Modern C++ Memory Safety
 
 /*
-    RAII = An object owns a resource, and when the object dies, the resource is released.
-    ✔️ Why RAII exists: To avoid manual delete and give you automatic cleanup, safely.
-     
-    Stack object created in a function dies once hit the end of the body { .. } <-- end 
-    Heap object die when manually deleted 
+    - raw points use "new" and "delete" (unsafe)
+    - smart pointers prevent all bad lucks.
     
-    e.g.
-    Stack Object: <-- acts like a temporary guest that comes and goes by itself
-    {
-        Player p(100); <-- lives
-    } <-- dies here
+    std::unique_ptr (only one owner)
+    ↪ object destroyed when owner goes out of scope { ... }
+    - destructor is automatic don't need "delete"
+    - you cannot copy it as it passes ownership hence becomes null (e.g. auto p2 = std::move(p1); // p1 becomes null)
+    e.g. std::unique_ptr<Player> p = std::make_unique<Player>(100);
     
-    Heap object: <-- acts like living in the house so manual "delete" necessaty
-    {
-        Player* p = new Player(100); <-- create address on  heap and store in pointer
-    } <-- stil alive
-    ...
-    delete p; <-- dies here only with "delete"
+    std::shared_ptr (multiple owners)
+    ↪ object detroyed when last referes goes away
+    - multiple smart pointers share the same object
+    - destructors runs when "all" owners of the same object die
+    e.g. std::shared_ptr<Player> p1 = std::make_shared<Player>(100);
+         std::shared_ptr<Player> p2 = p1; // both own it
     
-    memory leak: if pointer dies incorrectly the address stays memoery leak
-    
-*/
-
-class Logger
-{
-public:
-    Logger() // constructor
-    {
-        std::cout << "Constructing Logger" << std::endl;
+    std::weak_ptr (non-owning reference)
+    A → B
+    B → A
+    They will never reach zero references, which means:
+    -  destructors never run
+    - memory is leaked
+    - application keeps growing in RAM
+    Player → Weapon (shared_ptr)
+    Weapon → Player (weak_ptr)
+    Player OWNS the Weapon
+    Weapon just REFERS to Player but DOES NOT keep Player alive
+    does NOT keep the object alive
+    it only observes an object owned by shared_ptr
+    when the object dies, weak_ptr automatically becomes “expired”
+    it does NOT hold a valid address anymore
+    to use a weak pointer:
+    auto sp = weak.lock(); // auto means var in C#
+    if (sp) {
+        // object still alive
     }
     
-    ~Logger() // destructor
+    CODE EXAMPLE:
+    #include <iostream>
+    #include <memory>
+
+    class Player {
+    public:
+        Player()  { std::cout << "Player created\n"; }
+        ~Player() { std::cout << "Player destroyed\n"; }
+    };
+
+    int main() {
+        // 1) UNIQUE_PTR → owns Player exclusively
+        std::unique_ptr<Player> up = std::make_unique<Player>();
+
+        // 2) SHARED_PTR → shared ownership
+        std::shared_ptr<Player> sp1 = std::make_shared<Player>();
+        std::shared_ptr<Player> sp2 = sp1; // both share
+
+        std::cout << "Shared count: " << sp1.use_count() << "\n"; // prints 2
+
+        // 3) WEAK_PTR → does NOT own the object
+        std::weak_ptr<Player> wp = sp1; // refers to same Player, but does NOT keep alive
+
+        // Check if weak_ptr sees object alive
+        if (auto locked = wp.lock()) {
+            std::cout << "Weak_ptr sees player alive\n";
+        }
+
+        // Destroy both shared_ptr owners
+        sp1.reset();
+        sp2.reset();  // Player destroyed here (use_count hits 0)
+
+        // Now weak_ptr is expired
+        if (wp.expired()) {
+            std::cout << "Weak_ptr: object expired\n";
+        }
+
+        // unique_ptr goes out of scope automatically here → destroyed
+
+        return 0;
+    }
+*/
+
+class Player
+{
+public:
+
+    int health;
+    Player(int h) : health(h)
     {
-        std::cout << "Destructing Logger" << std::endl;
+        std::cout << "construted player" << std::endl;
+    }
+    ~Player()
+    {
+        std::cout << "Destructed player" << std::endl;
     }
 };
 
 int main()
 {
-    Logger a; // stack object; autoamtic construct and destruct
-    Logger* b = new Logger(); // heap object
-    delete b; // manually delete heap object
+    // unique pointer
+    std::unique_ptr<Player> up = std::make_unique<Player>(100);
+    std::cout << "start unique pointer: " << up->health << std::endl;
+    up->health = 80;
+    std::cout << "change unique pointer: " << up->health << std::endl;
+    
+    // shared pointer 
+    std::shared_ptr<Player> sp1 = std::make_shared<Player>(100);
+    std::cout << "start sp1 count: " << sp1.use_count() << std::endl;
+    auto sp2 = sp1;
+        
+    // weak pointer
+    std::weak_ptr<Player> wp = sp1; // refer to sp1 without owning it
+    if (wp.expired() == false)
+    {
+        std::cout << "weak pointer referring" << std::endl;
+    }
+    else 
+    {
+        std::cout << "weak pointer not referring" << std::endl;
+    }
 
+    std::cout << "start sp1 count: " << sp1.use_count() << std::endl;
+    sp1.reset(); // kill the owner sp1
+    
+    std::cout << "update sp2 count: " << sp2.use_count() << std::endl;
+    sp2.reset(); // kill the owner sp2
+    
+    // weak point dies when the object dies not the pointer, so if all owners then
+    // it gets expired in this case after sp2 is reset()
+    if (wp.expired() == false)
+    {
+        std::cout << "weak pointer referring" << std::endl;
+    }
+    else 
+    {
+        std::cout << "weak pointer not referring" << std::endl;
+    }
     return 0;
 }
 
+
+
+
+// ####
+// TOPIC 3 - Object lifetime and RAII
+// RAII = Resource Acquisition Is Initialization (object lifetime cruciality)
+
+// /*
+//     RAII = An object owns a resource, and when the object dies, the resource is released.
+//     ✔️ Why RAII exists: To avoid manual delete and give you automatic cleanup, safely.
+     
+//     Stack object created in a function dies once hit the end of the body { .. } <-- end 
+//     Heap object die when manually deleted 
+    
+//     e.g.
+//     Stack Object: <-- acts like a temporary guest that comes and goes by itself
+//     {
+//         Player p(100); <-- lives
+//     } <-- dies here
+    
+//     Heap object: <-- acts like living in the house so manual "delete" necessaty
+//     {
+//         Player* p = new Player(100); <-- create address on  heap and store in pointer
+//     } <-- stil alive
+//     ...
+//     delete p; <-- dies here only with "delete"
+    
+//     memory leak: if pointer dies incorrectly the address (heap object) stays -> memoery leak
+    
+// */
+
+// class Logger
+// {
+// public:
+//     Logger() // constructor
+//     {
+//         std::cout << "Constructing Logger" << std::endl;
+//     }
+    
+//     ~Logger() // destructor (if not added c++ will run it anyways)
+//     {
+//         // excplicit destructor allows to delete pointers related to the object :)
+//         std::cout << "Destructing Logger" << std::endl;
+//     }
+// };
+
+// int main()
+// {
+//     Logger a; // stack object; autoamtic construct and destruct
+//     Logger* b = new Logger(); // heap object
+//     delete b; // manually delete heap object
+
+//     return 0;
+// }
+
+
+
+
+// ####
 // TOPIC 2 — References vs Pointers
 // This is the foundation for controlling access without copying in C++
 
@@ -118,7 +270,11 @@ int main()
 //     std::cout << x->health << std::endl;
 // }
 
-// TOPIC 1 1 -
+
+
+
+// ####
+// TOPIC 1 - Value Semantics 
 // passing a variable to another it creates a copy
 // class Item 
 // {
