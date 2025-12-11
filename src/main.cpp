@@ -1,8 +1,5 @@
-#include <memory>
 #include <iostream>
-//#include "../include/calculator.h"
-
-//using "Calculator.cpp";
+#include "../include/calculator.h"
 
 // TOPIC 5 — Header / Source Structure
 
@@ -39,13 +36,13 @@
 
 int main()
 {
-    //Calculator calculator; // to create an object
-    ////std::unique_ptr<Calculator> calculator = std::make_unique<Calculator>(); // or use a pointer
-    //std::cout << "Add: " << calculator.Add(3, 3) << std::endl;
-    //std::cout << "Sub: " << calculator.Sub(9, 2) << std::endl;
-    //std::cout << "Mul: " << calculator.Mul(6, 6) << std::endl;
-    //std::cout << "Div Wrong: " << calculator.Div(9, 0) << std::endl;
-    //std::cout << "Divv Right: " << calculator.Div(9.0, 3.0) << std::endl;
+    // Calculator calculator; // to create an object
+    std::unique_ptr<Calculator> calculator = std::make_unique<Calculator>(); // or use a pointer
+    std::cout << "Add: " << calculator->Add(3, 3) << std::endl;
+    std::cout << "Sub: " << calculator->Sub(9, 2) << std::endl;
+    std::cout << "Mul: " << calculator->Mul(6, 6) << std::endl;
+    std::cout << "Div Wrong: " << calculator->Div(9, 0) << std::endl;
+    std::cout << "Div Right: " << calculator->Div(9.0, 3.0) << std::endl;
     return 0;
 }
 
