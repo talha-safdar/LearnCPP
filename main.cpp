@@ -1,4 +1,8 @@
+#include <memory>
 #include <iostream>
+//#include "../include/calculator.h"
+
+//using "Calculator.cpp";
 
 // TOPIC 5 — Header / Source Structure
 
@@ -17,22 +21,31 @@
     function bodies
     method bodies
     logic
+    
+    Use this rule:
+    ✔️ If a class has logic → split into .h and .cpp
+    ✔️ If a class is tiny or templated → header-only
+    ✔️ If a class is used in multiple files → split
+    ✔️ If it’s implementation detail → .cpp
+    
+    ✔️ Rule 1 — Headers include ONLY what they need
+    If header uses std::string, include <string>.
+    ✔️ Rule 2 — Never include <iostream> in headers (unless needed)
+    Put heavy includes in .cpp, not .h.
+    ✔️ Rule 3 — Use #pragma once
+    Simple and modern include guard.
+    ✔️ Rule 4 — Don’t put using namespace std; in headers
 */
 
 int main()
 {
-    // Unique Pointer (C++14+ required for make_unique)
-    std::unique_ptr<int> u_ptr = std::make_unique<int>(42);
-    std::cout << "Unique value: " << *u_ptr << "\n";
-    
-    // Shared Pointer
-    std::shared_ptr<int> s_ptr_a = std::make_shared<int>(99);
-    
-    // Copy/Share the pointer
-    std::shared_ptr<int> s_ptr_b = s_ptr_a;
-    
-    std::cout << "Shared value: " << *s_ptr_b << "\n";
-    std::cout << "Ref count: " << s_ptr_a.use_count() << "\n";
+    //Calculator calculator; // to create an object
+    ////std::unique_ptr<Calculator> calculator = std::make_unique<Calculator>(); // or use a pointer
+    //std::cout << "Add: " << calculator.Add(3, 3) << std::endl;
+    //std::cout << "Sub: " << calculator.Sub(9, 2) << std::endl;
+    //std::cout << "Mul: " << calculator.Mul(6, 6) << std::endl;
+    //std::cout << "Div Wrong: " << calculator.Div(9, 0) << std::endl;
+    //std::cout << "Divv Right: " << calculator.Div(9.0, 3.0) << std::endl;
     return 0;
 }
 
