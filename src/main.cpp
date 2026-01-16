@@ -1,6 +1,112 @@
 #include <iostream>
+#include <vector>
+#include <unordered_map>
 #include "../include/calculator.h"
 #include "../include/LogBuffer.h"
+#include "../include/Player.h"
+
+// TTOPIC 8 - STL Containers
+/*
+	they are like containers like .NET collections or Java collections
+        Default → std::vector
+        Need fast lookup by key → std::unordered_map
+        Need ordering → std::map
+        FIFO/LIFO → std::queue / std::stack
+        Set semantics → std::unordered_set
+
+	std::vector<T> (List<T> in C#): fast  iteration, simple ownership and easy to move
+        std::vector<int> v = {1,2,3};
+        v.push_back(4);
+        v[0];        // fast
+
+    Because std::vector has contiguous memory, much better cache locality, faster iteration, and is almost always faster in real-world code.
+
+    std::list<T>
+
+	std::unordered_map<K,V> (like Dictionary in .NET): use this over std::map unless ordering needed
+        std::unordered_map<int, std::string> m;
+        m[1] = "Player";
+
+    std::map<K, V>:
+        std::map<int, std::string> m;
+
+	std::unordered_set<T> / std::set<T> (liek HashSet in .NET): use unordered_set over set unless ordering needed
+        std::unordered_set<int> s;
+        s.insert(10);
+
+    std::array<T, N>: fixed-size array
+		std::array<int, 3> a = {1,2,3};
+
+	std::deque<T>: double-ended queue: like linked list but with random access
+        std::deque<int> d;
+        d.push_back(1);
+		d.push_front(0);
+
+    Adapters: stack, queue, priority_queue:
+    std::stack<int> s;
+    s.push(1);
+    s.pop();
+
+	Ownership and Lifietime:
+    std::vector<Player> players;            // owns Players
+    std::vector<std::unique_ptr<Player>> p; // owns pointers
+
+    By value when objects are small / movable
+    unique_ptr for polymorphism or large objects
+
+    Performance rules (memorise these)
+        Prefer vector
+        Prefer unordered_* over ordered versions
+        Avoid new inside containers
+        Use emplace_back when constructing in place
+
+    v.emplace_back(10); // constructs in-place
+
+    e.g.:
+    std::unordered_map<int, Player> players;
+    players.emplace(1, Player{100});
+
+*/
+int main()
+{
+	std::vector<Player> players;
+	std::unordered_map<int, size_t> indexById;
+
+    // add players
+    players.emplace_back(Player(1, "Altair", 100));
+	players.emplace_back(Player(2, "Ezio", 80));
+	players.emplace_back(Player(3, "Edward", 40));
+
+    // fill map
+    for (size_t i = 0; i < players.size(); ++i)
+    {
+		indexById[players[i].id] = i;
+    }
+
+	// lookup player by id
+	// it is an iterator pointer hence we use ->
+	int searchId = 2;
+	auto it = indexById.find(searchId); // auto = figure out type for me
+    if (it != indexById.end())
+    {
+		rsize_t index = it->second; // second because pair<key, value> key = first, value = second
+        players[index].hp -= 20; // modify hp
+    }
+
+	// print players
+    for (const auto& p : players)
+    {
+        std::cout
+            << "Player ID: " << p.id
+            << ", Name: " << p.name
+			<< ", HP: " << p.hp 
+            << std::endl;
+    }
+
+    return 0;
+}
+
+
 
 // TOPIC 7 - Copy vs Move Semantics
 /*

@@ -140,10 +140,12 @@
     <ClCompile Include="src\calculator.cpp" />
     <ClCompile Include="src\LogBuffer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\calculator.h" />
     <ClInclude Include="include\LogBuffer.h" />
+    <ClInclude Include="include\Player.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

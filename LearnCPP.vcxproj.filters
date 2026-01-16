@@ -24,12 +24,18 @@
     <ClCompile Include="src\LogBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\calculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\LogBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
