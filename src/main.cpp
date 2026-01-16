@@ -1,6 +1,134 @@
 #include <iostream>
 #include "../include/calculator.h"
 
+// TOPIC 6 - Contstructors, Destructors, Rule of 0/3/5
+/*
+    Constructors: allocate resouces
+	Destructors: release resouces (stack objects auto, heap manual delete)
+
+    5 special member fucntions:
+	C++ auto generates them:
+    1. Destructor
+    2. Copy constructor
+	3. Copy assignment operator
+	4. Move constructor
+	5. Move assignment operator
+	they control how objects are copied, moved, and destroyed.
+
+	RULE of 0 (do nothing if class owns nothing):
+	- if class doesn't manage resources, rely on compiler-generated functions:
+    class Vec2 {
+    public:
+        float x, y;
+    };
+
+	RULE of 3 (if class owns resources, define 3 things):
+	- if class manages resources (e.g., dynamic memory) with new:
+    class Player {
+    private:
+        int* data;
+    };
+    then you must define:   1. Destructor: release resources, 
+                            2. Copy constructor: deep copy resources, 
+						    3. Copy assignment operator: deep copy resources.
+    e.g.:
+    Player(const Player& other) { deep copy }
+    Player& operator=(const Player& other) { deep copy }
+    ~Player() { delete data; }
+
+	RULE of 5 (if class defines rule of 3, also define move versions):
+    - If you manually manage memory, moving becomes important to avoid unnecessary copies.
+		so define Move constructor and Move assignment operator.
+        e.g.:
+        Player(Player&& other) noexcept { steal pointer }
+        Player& operator=(Player&& other) noexcept { steal pointer }
+
+    EXAMPLES:
+    Rule 0:
+    class Person {
+    public:
+        std::string name; // std::string handles its own memory
+        int age;
+    };
+
+	Rule 3:
+    class Buffer {
+    private:
+        int* data;
+        int size;
+
+    public:
+        Buffer(int s)
+            : size(s), data(new int[s]) {}
+
+        ~Buffer() {
+            delete[] data;
+        }
+
+        Buffer(const Buffer& other)
+            : size(other.size), data(new int[other.size]) {
+            std::copy(other.data, other.data + size, data);
+        }
+
+        Buffer& operator=(const Buffer& other) {
+            if (this != &other) {
+                delete[] data;
+                size = other.size;
+                data = new int[size];
+                std::copy(other.data, other.data + size, data);
+            }
+            return *this;
+        }
+    };
+
+    Rule 5:
+    Buffer(Buffer&& other) noexcept
+    : size(other.size), data(other.data) {
+    other.data = nullptr;
+    other.size = 0;
+    }
+
+    Buffer& operator=(Buffer&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            size = other.size;
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+
+
+    C++20: Prefer Rule of 0. Avoid Rule of 3 and Rule of 5 unless you REALLY need raw pointers.
+    Because modern C++ uses:
+    - std::unique_ptr
+    - std::shared_ptr
+    - std::vector
+    - std::string
+    These automatically give you Rule of 5 behavior for free.
+
+	Rule 0: rely on compiler-generated functions.
+	Rule 3: define destructor, copy constructor, copy assignment operator. (when using new, delete, malloc, free)
+	Rule 5: wtih rule 3 also define move constructor and move assignment operator. (when using new, delete, malloc, free)
+
+    | Rule      | Meaning                                                 |
+    | --------- | ------------------------------------------------------- |
+    | Rule of 0 | “I don’t manage memory, C++ handles everything”         |
+    | Rule of 3 | “I manage memory, so I must control copy & destruction” |
+    | Rule of 5 | “I manage memory AND want fast moves”                   |
+
+	you should stick with rule of 0 as much as possible.
+	e.g. using std::unique_ptr instead of raw pointers.
+
+    Raw pointer ownership → you must write Rule of 3/5
+    RAII types (unique_ptr, vector, string) → Rule of 0
+    Rule of 0 = “Let well-written standard types handle ownership”
+*/
+
+
+
+
 // TOPIC 5 — Header / Source Structure
 
 /*
@@ -34,17 +162,17 @@
     ✔️ Rule 4 — Don’t put using namespace std; in headers
 */
 
-int main()
-{
-    // Calculator calculator; // to create an object
-    std::unique_ptr<Calculator> calculator = std::make_unique<Calculator>(); // or use a pointer
-    std::cout << "Add: " << calculator->Add(3, 3) << std::endl;
-    std::cout << "Sub: " << calculator->Sub(9, 2) << std::endl;
-    std::cout << "Mul: " << calculator->Mul(6, 6) << std::endl;
-    std::cout << "Div Wrong: " << calculator->Div(9, 0) << std::endl;
-    std::cout << "Div Right: " << calculator->Div(9.0, 3.0) << std::endl;
-    return 0;
-}
+//int main()
+//{
+//    // Calculator calculator; // to create an object
+//    std::unique_ptr<Calculator> calculator = std::make_unique<Calculator>(); // or use a pointer
+//    std::cout << "Add: " << calculator->Add(3, 3) << std::endl;
+//    std::cout << "Sub: " << calculator->Sub(9, 2) << std::endl;
+//    std::cout << "Mul: " << calculator->Mul(6, 6) << std::endl;
+//    std::cout << "Div Wrong: " << calculator->Div(9, 0) << std::endl;
+//    std::cout << "Div Right: " << calculator->Div(9.0, 3.0) << std::endl;
+//    return 0;
+//}
 
 
 
@@ -212,7 +340,7 @@ int main()
 //         Player p(100); <-- lives
 //     } <-- dies here
     
-//     Heap object: <-- acts like living in the house so manual "delete" necessaty
+//     Heap object: <-- acts like living in the house so manual "delete" necessay
 //     {
 //         Player* p = new Player(100); <-- create address on  heap and store in pointer
 //     } <-- stil alive
