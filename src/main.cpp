@@ -4,8 +4,137 @@
 #include "../include/calculator.h"
 #include "../include/LogBuffer.h"
 #include "../include/Player.h"
+#include <algorithm>
 
-// TTOPIC 8 - STL Containers
+// TOPIC 9 - STL Algorithms + Lambdas
+/*
+    being() means first element in list (inclusive)
+	end() means one past last element in list (marks the stopping point) (exclusive) used for not found
+
+    Algorithms: express intent; 
+    Lambdas: provide the condition.
+    Together, they replace most manual loops.
+
+    syntax:     [](params) { body }
+	example:    [](int x) { return x > 0; }
+
+    [] = capture nothing
+    [&] = capture all by reference
+	[=] = capture all by value
+    [x] = capture x by value
+	[x, &y] = capture x by value, y by reference
+    e.g.:
+    int threshold = 50;
+    auto lowHp = [&](const Player& p) { return p.hp < threshold; };
+
+	std::find: used == to find an element in a container
+    e.g.:
+	auto it = std::find(v.begin(), v.end(), 42);
+
+	std::find_if: used with a condition (lambda)
+    e.g.:
+    auto it = std::find_if(players.begin(), players.end(),
+    [](const Player& p) { return p.hp < 50; });
+
+    std::count_if:
+    int lowCount = std::count_if(players.begin(), players.end(),
+    [](const Player& p) { return p.hp < 50; });
+
+    std::any_of, std::all_of: Checks existence / universality.
+    e.g.:
+    bool anyDead = std::any_of(players.begin(), players.end(),
+        [](const Player& p) { return p.hp <= 0; });
+    bool allAlive = std::all_of(players.begin(), players.end(),
+        [](const Player& p) { return p.hp > 0; });
+
+    std::sort: Sorts a container.
+    std::sort(players.begin(), players.end(),
+    [](const Player& a, const Player& b) {
+        return a.hp > b.hp; // descending
+    });
+
+    std::remove_if:
+    e.g.:
+    players.erase(
+        std::remove_if(players.begin(), players.end(),
+            [](const Player& p) { return p.hp <= 0; }),
+        players.end()
+    );
+    Important: remove_if doesn’t erase; erase does.
+
+    Algorithm	Returns
+    find_if	    iterator
+    count_if	number
+    any_of	    bool
+    all_of	    bool
+    sort	    void
+    remove_if	iterator
+*/
+int main()
+{
+    std::vector<Player> players = {
+        {1, "Alice", 100},
+        {2, "Bob", 40},
+        {3, "Eve", 0},
+        {4, "Mallory", 70}
+    };
+
+    // 1) find_if
+    auto it = std::find_if(players.begin(), players.end(),
+        [](const Player& p) { return p.hp < 50; });
+
+    if (it != players.end())
+        std::cout << "Found low HP player: " << it->name << "\n";
+    else
+        std::cout << "No low HP player\n";
+
+    // 2) count_if
+    auto lowCount = std::count_if(players.begin(), players.end(),
+        [](const Player& p) { return p.hp < 50; });
+
+    std::cout << "Low HP count: " << lowCount << "\n";
+
+    // 3) any_of
+    bool anyDead = std::any_of(players.begin(), players.end(),
+        [](const Player& p) { return p.hp <= 0; });
+
+    if (anyDead)
+        std::cout << "At least one player is dead\n";
+
+    // 4) all_of
+    bool allAlive = std::all_of(players.begin(), players.end(),
+        [](const Player& p) { return p.hp > 0; });
+
+    if (allAlive)
+        std::cout << "All players are alive\n";
+
+    // 5) sort (descending HP)
+    std::sort(players.begin(), players.end(),
+        [](const Player& a, const Player& b) {
+            return a.hp > b.hp;
+        });
+
+    std::cout << "\nSorted players:\n";
+    for (const auto& p : players)
+        std::cout << p.name << " (" << p.hp << ")\n";
+
+    // 6) erase-remove
+    players.erase(
+        std::remove_if(players.begin(), players.end(),
+            [](const Player& p) { return p.hp <= 0; }),
+        players.end()
+    );
+
+    std::cout << "\nAfter removing dead players:\n";
+    for (const auto& p : players)
+        std::cout << p.name << " (" << p.hp << ")\n";
+
+    return 0;
+}
+
+
+
+// TOPIC 8 - STL Containers
 /*
 	they are like containers like .NET collections or Java collections
         Default → std::vector
@@ -67,44 +196,44 @@
     players.emplace(1, Player{100});
 
 */
-int main()
-{
-	std::vector<Player> players;
-	std::unordered_map<int, size_t> indexById;
-
-    // add players
-    players.emplace_back(Player(1, "Altair", 100));
-	players.emplace_back(Player(2, "Ezio", 80));
-	players.emplace_back(Player(3, "Edward", 40));
-
-    // fill map
-    for (size_t i = 0; i < players.size(); ++i)
-    {
-		indexById[players[i].id] = i;
-    }
-
-	// lookup player by id
-	// it is an iterator pointer hence we use ->
-	int searchId = 2;
-	auto it = indexById.find(searchId); // auto = figure out type for me
-    if (it != indexById.end())
-    {
-		rsize_t index = it->second; // second because pair<key, value> key = first, value = second
-        players[index].hp -= 20; // modify hp
-    }
-
-	// print players
-    for (const auto& p : players)
-    {
-        std::cout
-            << "Player ID: " << p.id
-            << ", Name: " << p.name
-			<< ", HP: " << p.hp 
-            << std::endl;
-    }
-
-    return 0;
-}
+//int main()
+//{
+//	std::vector<Player> players;
+//	std::unordered_map<int, size_t> indexById;
+//
+//    // add players
+//    players.emplace_back(Player(1, "Altair", 100));
+//	players.emplace_back(Player(2, "Ezio", 80));
+//	players.emplace_back(Player(3, "Edward", 40));
+//
+//    // fill map
+//    for (size_t i = 0; i < players.size(); ++i)
+//    {
+//		indexById[players[i].id] = i;
+//    }
+//
+//	// lookup player by id
+//	// it is an iterator pointer hence we use ->
+//	int searchId = 2;
+//	auto it = indexById.find(searchId); // auto = figure out type for me
+//    if (it != indexById.end())
+//    {
+//		rsize_t index = it->second; // second because pair<key, value> key = first, value = second
+//        players[index].hp -= 20; // modify hp
+//    }
+//
+//	// print players
+//    for (const auto& p : players)
+//    {
+//        std::cout
+//            << "Player ID: " << p.id
+//            << ", Name: " << p.name
+//			<< ", HP: " << p.hp 
+//            << std::endl;
+//    }
+//
+//    return 0;
+//}
 
 
 
