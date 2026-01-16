@@ -1,5 +1,79 @@
 #include <iostream>
 #include "../include/calculator.h"
+#include "../include/LogBuffer.h"
+
+// TOPIC 7 - Copy vs Move Semantics
+/*
+	Copy: creates a new object that owns its own data: T b = a;   // copy can be expensive
+	Move: transfers ownership of data from one object to another: T b = std::move(a); // move is cheap
+    e.g.:
+    #include <iostream>
+    #include <vector>
+
+    class Box {
+    public:
+        std::vector<int> data;
+
+        Box() { std::cout << "Default\n"; }
+
+        Box(const Box& other) : data(other.data) {
+            std::cout << "Copy\n";
+        }
+
+        Box(Box&& other) noexcept : data(std::move(other.data)) {
+            std::cout << "Move\n";
+        }
+    };
+
+        int main() {
+        Box a;
+        a.data = {1,2,3};
+
+        Box b = a;              // COPY
+        Box c = std::move(a);   // MOVE
+    }
+
+    Output:
+    Default
+    Copy
+    Move
+
+    b = a → deep copy of vector
+    c = std::move(a) → vector ownership transferred
+    a.data becomes empty (but valid)
+
+    If your type owns RAII members → moves are automatic
+
+    Copy = duplicate data
+    Move = steal data
+	std::move = “you may steal from this” // the object doesn't get destroyed, but its resources are moved
+
+    Returning an object does not mean “move” — it usually means “construct it directly where it’s needed.”
+*/
+
+//LogBuffer CreateBuffer()
+//{
+//    LogBuffer b;
+//    b.data = { 1, 2, 3, 4 };
+//    return b;
+//}
+//
+//int main()
+//{
+//    std::cout << "---- A ----\n";
+//	LogBuffer a; // default constructor
+//
+//	std::cout << "---- B ----\n";
+//    LogBuffer b = std::move(a); // move constructor (steal from a)
+//
+//	std::cout << "---- C ----\n";
+//	LogBuffer c = CreateBuffer(); // RVO: no copy, no move, RVO = return value optimization
+//
+//    return 0;
+//}
+
+
+
 
 // TOPIC 6 - Contstructors, Destructors, Rule of 0/3/5
 /*
